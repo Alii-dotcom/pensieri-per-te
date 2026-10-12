@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Pensieri per te</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;700&family=Nunito:wght@400;600&display=swap">
+<style>
+:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);
+--bg1:#e6f4f7;--bg2:#d7efe9;--ink:#27506b;--soft:#5f8aa0;--card:rgba(255,255,255,.7);--accent:#4a9bb8;
+--n1:#cfe8f7;--n2:#d3f0e3;--n3:#c9eef0;--n4:#dde9fb;--nink:#254a63}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg1:#0f2733;--bg2:#12322f;--ink:#d6ecf4;--soft:#8fb4c4;--card:rgba(255,255,255,.08);--accent:#6cc0dc;
+--n1:#27506b;--n2:#245748;--n3:#1f5a63;--n4:#2d4a7a;--nink:#eaf6fb}}
+:root[data-theme="dark"]{--bg1:#0f2733;--bg2:#12322f;--ink:#d6ecf4;--soft:#8fb4c4;--card:rgba(255,255,255,.08);--accent:#6cc0dc;--n1:#27506b;--n2:#245748;--n3:#1f5a63;--n4:#2d4a7a;--nink:#eaf6fb}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;font-family:Nunito,system-ui,sans-serif;color:var(--ink);background:linear-gradient(160deg,var(--bg1),var(--bg2));background-attachment:fixed;overflow-x:hidden}
+body::before,body::after{content:"";position:fixed;border-radius:50%;filter:blur(60px);opacity:.5;z-index:0;pointer-events:none}
+body::before{width:380px;height:380px;background:#9fd6e6;top:-120px;left:-100px}
+body::after{width:420px;height:420px;background:#a8e0c6;bottom:-160px;right:-120px}
+#root{position:relative;z-index:1;max-width:760px;margin:0 auto;padding:28px 18px 60px}
+h1{font-family:Caveat,cursive;font-size:2.8rem;margin:.2em 0 0;text-align:center;font-weight:700}
+.sub{text-align:center;color:var(--soft);margin:0 0 26px}
+.card{background:var(--card);backdrop-filter:blur(8px);border-radius:22px;padding:22px;box-shadow:0 8px 30px rgba(60,120,150,.12);margin-bottom:24px}
+.lock{max-width:380px;margin:12vh auto 0;text-align:center}
+input,textarea{width:100%;font:inherit;color:var(--ink);background:rgba(255,255,255,.55);border:1.5px solid rgba(74,155,184,.35);border-radius:14px;padding:12px 14px;margin:8px 0;outline:none}
+:root[data-theme="dark"] input,:root[data-theme="dark"] textarea{background:rgba(255,255,255,.08)}
+input:focus,textarea:focus{border-color:var(--accent)}
+textarea{min-height:100px;resize:vertical;font-family:Caveat,cursive;font-size:1.4rem}
+button{font:inherit;font-weight:600;border:0;border-radius:999px;padding:12px 26px;color:#fff;background:linear-gradient(135deg,#4a9bb8,#4fb594);cursor:pointer;margin-top:8px}
+button:disabled{opacity:.6}
+label.chk{display:flex;gap:8px;align-items:center;justify-content:center;font-size:.9rem;color:var(--soft);margin-top:6px}
+label.chk input{width:auto;margin:0}
+.err{color:#c0506a;min-height:1.3em;font-size:.9rem}
+.lead{font-family:Caveat,cursive;font-size:1.7rem;margin:0 0 4px}
+.wall{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:22px;padding:6px}
+.note{padding:20px 18px 16px;min-height:150px;color:var(--nink);border-radius:4px 4px 18px 4px;box-shadow:0 8px 16px rgba(40,90,120,.18);transform:rotate(var(--r));display:flex;flex-direction:column;justify-content:space-between;transition:transform .25s;position:relative}
+.note:hover{transform:rotate(0) scale(1.03)}
+.note::before{content:"";position:absolute;top:-9px;left:50%;width:60px;height:18px;margin-left:-30px;background:rgba(255,255,255,.55);border-radius:3px;transform:rotate(-2deg)}
+.note p{font-family:Caveat,cursive;font-size:1.5rem;line-height:1.2;margin:0 0 12px;white-space:pre-wrap;word-break:break-word}
+.note small{font-size:.75rem;opacity:.7}
+.empty{text-align:center;color:var(--soft);padding:30px}
+.banner{text-align:center;font-family:Caveat,cursive;font-size:1.9rem;margin-bottom:16px;animation:pop .8s ease}
+@keyframes pop{from{transform:scale(.7);opacity:0}to{transform:none;opacity:1}}
+.heart{position:fixed;bottom:-40px;z-index:50;pointer-events:none;animation:rise linear forwards}
+@keyframes rise{0%{transform:translateY(0) translateX(0) scale(.6);opacity:0}10%{opacity:1}100%{transform:translateY(-110vh) translateX(var(--dx)) scale(1.3);opacity:0}}
+.hint{font-size:.85rem;color:var(--soft);text-align:center;margin-top:30px}
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script id="vault" type="application/json">null</script>
+<script data-keep="1">
+(function(){
+var root=document.getElementById('root');
+var vault=JSON.parse(document.getElementById('vault').textContent);
+var enc=new TextEncoder(),dec=new TextDecoder();
+var canWrite=(location.hash==='#scrivi'),notes=[],pw='',flash='';
+
+function b64(buf){var s='',b=new Uint8Array(buf);for(var i=0;i<b.length;i++)s+=String.fromCharCode(b[i]);return btoa(s)}
+function unb64(s){var a=atob(s),b=new Uint8Array(a.length);for(var i=0;i<a.length;i++)b[i]=a.charCodeAt(i);return b}
+async function mkKey(p,salt){var base=await crypto.subtle.importKey('raw',enc.encode(p),'PBKDF2',false,['deriveKey']);
+ return crypto.subtle.deriveKey({name:'PBKDF2',salt:salt,iterations:250000,hash:'SHA-256'},base,{name:'AES-GCM',length:256},false,['encrypt','decrypt'])}
+async function encrypt(p,obj){var salt=crypto.getRandomValues(new Uint8Array(16)),iv=crypto.getRandomValues(new Uint8Array(12));
+ var k=await mkKey(p,salt);var ct=await crypto.subtle.encrypt({name:'AES-GCM',iv:iv},k,enc.encode(JSON.stringify(obj)));
+ return {salt:b64(salt),iv:b64(iv),ct:b64(ct)}}
+async function decrypt(p,v){var k=await mkKey(p,unb64(v.salt));
+ var pt=await crypto.subtle.decrypt({name:'AES-GCM',iv:unb64(v.iv)},k,unb64(v.ct));return JSON.parse(dec.decode(pt))}
+
+function store(kind,k,v){try{(kind==='l'?localStorage:sessionStorage).setItem(k,v)}catch(e){}}
+function load(k){try{return sessionStorage.getItem(k)||localStorage.getItem(k)}catch(e){return null}}
+function esc(s){var d=document.createElement('div');d.textContent=s;return d.innerHTML}
+
+function hearts(){var em=['💙','💚','🩵','💙','💚'];
+ for(var i=0;i<28;i++){(function(i){var h=document.createElement('span');h.className='heart';h.textContent=em[i%em.length];
+  h.style.left=Math.random()*95+'vw';h.style.fontSize=(18+Math.random()*26)+'px';
+  h.style.setProperty('--dx',(Math.random()*120-60)+'px');
+  h.style.animationDuration=(4+Math.random()*3)+'s';h.style.animationDelay=(Math.random()*2.2)+'s';
+  document.body.appendChild(h);setTimeout(function(){h.remove()},8000)})(i)}}
+
+function head(){return '<h1>Pensieri per te 💙</h1><p class="sub">Tutte le volte che ho pensato a te</p>'}
+
+function viewLock(){
+ if(!vault){
+  if(canWrite){root.innerHTML=head()+'<div class="card lock"><p class="lead">Crea la vostra password</p><p class="sub">Scegli una password da dare solo a lei. Non viene salvata da nessuna parte: i pensieri vengono cifrati con questa.</p><input id="p1" type="password" placeholder="Password" autocomplete="new-password"><input id="p2" type="password" placeholder="Ripeti la password" autocomplete="new-password"><div class="err" id="e"></div><button id="go">Crea lo spazio</button></div>';
+   document.getElementById('go').onclick=async function(){var a=p1.value,b=p2.value,e=document.getElementById('e');
+    if(a.length<6){e.textContent='Almeno 6 caratteri, meglio una frase.';return}
+    if(a!==b){e.textContent='Le due password non coincidono.';return}
+    this.disabled=true;e.textContent='Sto cifrando…';pw=a;notes=[];await save()}
+  }else{root.innerHTML=head()+'<div class="card lock"><p class="lead">Sta arrivando qualcosa di bello…</p><p class="sub">Torna a trovarci tra poco.</p></div>'}
+  return}
+ root.innerHTML=head()+'<div class="card lock"><p class="lead">C\'è qualcosa per te 💌</p><p class="sub">Inserisci la password che ti ho dato</p><input id="pw" type="password" placeholder="Password" autocomplete="current-password"><label class="chk"><input type="checkbox" id="rem" checked> Ricordala su questo dispositivo</label><div class="err" id="e"></div><button id="go">Apri</button></div>';
+ var inp=document.getElementById('pw');inp.addEventListener('keydown',function(e){if(e.key==='Enter')go.click()});
+ document.getElementById('go').onclick=function(){tryOpen(inp.value,document.getElementById('rem').checked)}}
+
+async function tryOpen(p,remember,silent){var e=document.getElementById('e');
+ if(!p)return;if(e)e.textContent='Un attimo…';
+ try{notes=await decrypt(p,vault);pw=p;store('s','pw',p);if(remember)store('l','pw',p);viewNotes()}
+ catch(err){if(e)e.textContent=silent?'':'Password sbagliata, riprova 🙂'}}
+
+async function save(){
+ try{var v=await encrypt(pw,notes);
+  var clone=document.documentElement.cloneNode(true);
+  clone.querySelector('#root').innerHTML='';
+  clone.querySelectorAll('.heart').forEach(function(n){n.remove()});
+  clone.querySelectorAll('script').forEach(function(s){if(s.id==='vault'){s.textContent=JSON.stringify(v)}else if(!s.hasAttribute('data-keep')){s.remove()}});
+  var html='<!DOCTYPE html>\n'+clone.outerHTML;
+  var a=document.createElement('a');a.href=URL.createObjectURL(new Blob([html],{type:'text/html'}));
+  a.download='index.html';document.body.appendChild(a);a.click();a.remove();
+  flash='Salvato! Il file index.html è stato scaricato: caricalo sul tuo sito al posto del vecchio per mostrare il nuovo pensiero a tua mamma.';
+  store('s','pw',pw);viewNotes();
+ }catch(err){var e=document.getElementById('e');if(e)e.textContent='Non sono riuscito a salvare. Riprova.';var b=document.getElementById('send')||document.getElementById('go');if(b)b.disabled=false}}
+
+function viewNotes(){
+ var seen=parseInt(load('seen')||'0',10)||0,fresh=notes.length>seen&&!canWrite;
+ var cols=['--n1','--n2','--n3','--n4'];
+ var html=head();
+ if(flash)html+='<div class="card" style="text-align:center">✅ '+esc(flash)+'</div>';flash='';
+ if(fresh)html+='<div class="banner">Hai un nuovo pensiero 💙</div>';
+ if(canWrite)html+='<div class="card"><p class="lead">Quando ti penso ti dico qualcosa qui:</p><textarea id="t" maxlength="400" placeholder="Una frase bella, un ricordo, un pensiero…"></textarea><div class="err" id="e"></div><button id="send">Lascia il pensiero 💌</button></div>';
+ if(!notes.length)html+='<div class="empty">Ancora nessun pensiero. Presto ne arriveranno…</div>';
+ else{html+='<div class="wall">';
+  notes.slice().reverse().forEach(function(n,i){var r=((n.id*37)%9-4)*0.9;var d=new Date(n.d).toLocaleDateString('it-IT',{day:'numeric',month:'long',year:'numeric'});
+   html+='<div class="note" style="background:var('+cols[n.id%4]+');--r:'+r+'deg"><p>'+esc(n.t)+'</p><small>'+d+'</small></div>'});
+  html+='</div>'}
+ html+='<p class="hint">🔒 Spazio privato, protetto da password</p>';
+ root.innerHTML=html;
+ if(canWrite){document.getElementById('send').onclick=async function(){var t=document.getElementById('t').value.trim();if(!t)return;
+   this.disabled=true;var id=notes.reduce(function(m,n){return Math.max(m,n.id)},0)+1;
+   notes.push({id:id,t:t,d:new Date().toISOString()});await save()}}
+ else{store('l','seen',String(notes.length))}
+ if(fresh)hearts()}
+
+function start(){
+ var saved=load('pw');
+ if(vault&&saved){viewLock();tryOpen(saved,false,true)}
+ else viewLock()}
+
+start();
+})();
+</script>
+</body>
+</html>
